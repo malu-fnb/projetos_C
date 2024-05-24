@@ -1,0 +1,206 @@
+#define _CRT_SECURE_NO_WARNINGS
+#define TRUE 1
+#define FALSE 0
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct node {
+    int info;
+    struct node* prox;
+} Node;
+
+typedef struct lseCircular {
+    Node* inicio;
+    Node* fim;
+    int qtd;
+} LSECircular;
+
+int isEmpty(LSECircular lista) {
+    return lista.qtd == 0 ? TRUE : FALSE;
+}
+
+void inserirInicio(LSECircular* lista, int valor) {
+    Node* novo = (Node*) malloc(sizeof(Node));
+    novo->info = valor;
+    if (isEmpty(*lista)) {
+        lista->inicio = novo;
+        lista->fim = novo;
+        novo->prox = lista->inicio;
+    } else {
+        novo->prox = lista->inicio;
+        lista->inicio = novo;
+        lista->fim->prox = lista->inicio;
+    }
+    lista->qtd++;
+}
+
+void inserirFim(LSECircular* lista, int valor) {
+    Node* novo = (Node*) malloc(sizeof(Node));
+    novo->info = valor;
+    if (isEmpty(*lista)) {
+        lista->inicio = novo;
+        lista->fim = novo;
+        novo->prox = lista->inicio;
+    } else {
+        lista->fim->prox = novo;
+        lista->fim = novo;
+        novo->prox = lista->inicio;
+    }
+    lista->qtd++;
+}
+
+void removerPrimeiro(LSECircular* lista) {
+    if (isEmpty(*lista)) {
+        printf("Lista vazia!\n");
+        return;
+    }
+    Node* temp = lista->inicio;
+    if (lista->inicio == lista->fim) {  // Apenas um nó
+        lista->inicio = NULL;
+        lista->fim = NULL;
+    } else {
+        lista->inicio = lista->inicio->prox;
+        lista->fim->prox = lista->inicio;
+    }
+    free(temp);
+    lista->qtd--;
+}
+
+void removerUltimo(LSECircular* lista) {
+    if (isEmpty(*lista)) {
+        printf("Lista vazia!\n");
+        return;
+    }
+    Node* temp = lista->inicio;
+    if (lista->inicio == lista->fim) {  // Apenas um nó
+        lista->inicio = NULL;
+        lista->fim = NULL;
+    } else {
+        while (temp->prox != lista->fim) {
+            temp = temp->prox;
+        }
+        Node* toRemove = lista->fim;
+        lista->fim = temp;
+        lista->fim->prox = lista->inicio;
+        free(toRemove);
+    }
+    lista->qtd--;
+}
+
+void exibir(LSECircular* lista) {
+    if (isEmpty(*lista)) {
+        printf("Lista vazia!\n");
+        return;
+    }
+    Node* temp = lista->inicio;
+    do {
+        printf("%d -> ", temp->info);
+        temp = temp->prox;
+    } while (temp != lista->inicio);
+    printf("INICIO\n");
+}
+
+void inicializar(LSECircular* lista) {
+    lista->inicio = NULL;
+    lista->fim = NULL;
+    lista->qtd = 0;
+}
+
+int remove_value(LSECircular* lista, int valor) {
+    if (isEmpty(*lista)) {
+        return 0;  // Lista vazia
+    }
+
+    Node* current = lista->inicio;
+    Node* prev = lista->fim;
+    int count = 0;
+
+    // Remover nós com o valor do início (caso especial)
+    while (current->info == valor) {
+        if (current == lista->fim) {  // Apenas um nó na lista
+            free(current);
+            lista->inicio = NULL;
+            lista->fim = NULL;
+            lista->qtd--;
+            return count + 1;
+        }
+
+        lista->inicio = current->prox;
+        lista->fim->prox = lista->inicio;
+        free(current);
+        current = lista->inicio;
+        count++;
+        lista->qtd--;
+    }
+
+    // Remover outros nós com o valor
+    do {
+        if (current->info == valor) {
+            prev->prox = current->prox;
+            free(current);
+            current = prev->prox;
+            count++;
+            lista->qtd--;
+        } else {
+            prev = current;
+            current = current->prox;
+        }
+    } while (current != lista->inicio);
+
+    return count;
+}
+
+void exibirOpcoes() {
+    printf("Opções: \n");
+    printf("1 – Inserir valor no início da lista \n");
+    printf("2 – Inserir valor no final da lista \n");
+    printf("3 – Remover primeiro da lista \n");
+    printf("4 – Remover último da lista \n");
+    printf("5 – Exibir a lista \n");
+    printf("6 – Remover um valor específico da lista \n");
+    printf("0 - Encerrar programa \n");
+    printf("Informe a opção desejada: ");
+}
+
+int main() {
+    LSECircular listaInteiros;
+    inicializar(&listaInteiros);
+    int op, num;
+    do {
+        exibirOpcoes();
+        scanf("%d", &op);
+        switch (op) {
+        case 1: 
+            printf("Informe o valor a ser inserido: ");
+            scanf("%d", &num);
+            inserirInicio(&listaInteiros, num);
+            break;
+        case 2: 
+            printf("Informe o valor a ser inserido: ");
+            scanf("%d", &num);
+            inserirFim(&listaInteiros, num);
+            break;
+        case 3: 
+            removerPrimeiro(&listaInteiros);
+            break;
+        case 4: 
+            removerUltimo(&listaInteiros);
+            break;
+        case 5: 
+            exibir(&listaInteiros);
+            break;
+        case 6: 
+            printf("Informe o valor a ser removido: ");
+            scanf("%d", &num);
+            int removidos = remove_value(&listaInteiros, num);
+            printf("Quantidade de %d removidos: %d\n", num, removidos);
+            break;
+        case 0: 
+            printf("Fim de programa!\n");
+            break;
+        default: 
+            printf("Opção inválida!\n");
+        }
+    } while (op != 0);
+    return 0;
+}
